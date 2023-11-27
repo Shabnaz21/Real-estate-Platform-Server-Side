@@ -54,9 +54,20 @@ async function run() {
             const result = await WishlistCollection.insertOne(addItem)
             res.send(result)
         })
+
         app.get('/wishlist', async (req, res) => {
-            const result = await WishlistCollection.find().toArray();
+            const email = req.query.email;
+            const query = { email: email };
+            const result = await WishlistCollection.find(query).toArray();
             res.send(result)
+        })
+        app.delete('/wishlist/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {
+                _id: new ObjectId(id),
+            };
+            const result = await WishlistCollection.deleteOne(query);
+            res.send(result);
         })
 
         // properties collection
