@@ -31,6 +31,7 @@ const client = new MongoClient(uri, {
 });
 
 // Connection Collection
+const UserCollection = client.db("newVilla").collection("users");
 const ReviewCollection = client.db("newVilla").collection("reviews");
 const PropertiesCollection = client.db("newVilla").collection("properties");
 const WishlistCollection = client.db("newVilla").collection("wishlists");
@@ -39,6 +40,25 @@ async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
+
+        // user collection
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            const query = { email: user.email }
+            const existingUser = await UserCollection.findOne(query);
+
+            if (existingUser) {
+                return res.send({ message: 'user already exists', insertedId: null })
+            }
+            const result = await UserCollection.insertOne(user);
+            res.send(result);
+        });
+
+        app.get('/users', async (req, res) => {
+            const result = await UserCollection.find().toArray();
+            res.send(result);
+        });
+
 
         // reviews collection
         app.get('/reviews', async (req, res) => {
