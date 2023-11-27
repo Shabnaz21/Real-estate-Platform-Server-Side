@@ -33,26 +33,38 @@ const client = new MongoClient(uri, {
 // Connection Collection
 const ReviewCollection = client.db("newVilla").collection("reviews");
 const PropertiesCollection = client.db("newVilla").collection("properties");
+const WishlistCollection = client.db("newVilla").collection("wishlists");
 
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
 
-        // reviews Part
-       
+        // reviews collection
         app.get('/reviews', async (req, res) => {
-            const result = await ReviewCollection.find().toArray();
+            const email = req.query.email;
+            const query = { email: email };
+            const result = await ReviewCollection.find(query).toArray();
             res.send(result)
         })
 
-        // properties part
+        // wishlist collection
+        app.post('/wishlist', async (req, res) => {
+            const addItem = req.body;
+            const result = await WishlistCollection.insertOne(addItem)
+            res.send(result)
+        })
+        app.get('/wishlist', async (req, res) => {
+            const result = await WishlistCollection.find().toArray();
+            res.send(result)
+        })
+
+        // properties collection
         app.get('/properties', async (req, res) => {
             const result = await PropertiesCollection.find().toArray();
             res.send(result)
         })
 
-        // per properties
         app.get('/properties/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
