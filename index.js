@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 require('dotenv').config()
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5001;
 
 // middleWare 
 app.use(cors(
@@ -126,6 +126,18 @@ async function run() {
             const query = { _id: new ObjectId(id) }
             const result = await PropertiesCollection.findOne(query);
             res.send(result)
+        })
+        
+        app.patch('/properties/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    status: 'verify' 
+                }
+            }
+            const result = await PropertiesCollection.updateOne(filter, updatedDoc);
+            res.send(result);
         })
 
         // wishlist collection
