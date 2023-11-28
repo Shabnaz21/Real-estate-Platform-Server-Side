@@ -89,7 +89,7 @@ async function run() {
         });
 
     
-        app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
+        app.get('/users',  async (req, res) => {
 
             let queryObj = {};
             if (req.query && req.query.email) {
@@ -101,12 +101,12 @@ async function run() {
         });
 
         // admin get 
-        app.get('/users/admin/:email', verifyToken, async (req, res) => {
-            const email = req.params.email;
+        app.get('/users/admin/:email', async (req, res) => {
+            const email = req.params?.email;
 
-            if (email !== req.decoded.email) {
-                return res.status(403).send({ message: 'forbidden access' })
-            }
+            // if (email !== req.decoded?.email) {
+            //     return res.status(403).send({ message: 'forbidden access' })
+            // }
 
             const query = { email: email };
             const user = await UserCollection.findOne(query);
@@ -116,7 +116,6 @@ async function run() {
             }
             res.send({ admin });
         })
-        
         app.delete('/users/:id', verifyToken, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
