@@ -53,11 +53,52 @@ async function run() {
             const result = await UserCollection.insertOne(user);
             res.send(result);
         });
-
+        
         app.get('/users', async (req, res) => {
-            const result = await UserCollection.find().toArray();
+            let queryObj = {};
+
+            if (req.query && req.query.email) {
+                queryObj.email = req.query.email;
+            }
+
+            const result = await UserCollection.find(queryObj).toArray();
             res.send(result);
         });
+
+        app.patch('/users/agent/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    role: 'agent'
+                }
+            }
+            const result = await UserCollection.updateOne(filter, updatedDoc);
+            res.send(result);
+        })
+        app.patch('/users/fraud/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    role: 'fraud'
+                }
+            }
+            const result = await UserCollection.updateOne(filter, updatedDoc);
+            res.send(result);
+        })
+
+        app.patch('/users/admin/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    role: 'admin'
+                }
+            }
+            const result = await UserCollection.updateOne(filter, updatedDoc);
+            res.send(result);
+        })
 
         app.delete('/users/:id', async (req, res) => {
             const id = req.params.id;
@@ -95,9 +136,14 @@ async function run() {
         })
 
         app.get('/wishlist', async (req, res) => {
-            const email = req.query.UserEmail;
-            const query = { email: email };
-            const result = await WishlistCollection.find(query).toArray();
+            let queryObj = {}
+            const userEmail = req.query?.userEmail;
+
+            if (userEmail) {
+                queryObj.userEmail = userEmail
+            }
+           
+            const result = await WishlistCollection.find(queryObj).toArray();
             res.send(result)
         })
 
