@@ -105,6 +105,7 @@ async function run() {
         app.get('/users/admin/:email', async (req, res) => {
             const email = req.params?.email;
 
+            // why it's enable ,then auto singOut
             // if (email !== req.decoded?.email) {
             //     return res.status(403).send({ message: 'forbidden access' })
             // }
@@ -165,14 +166,24 @@ async function run() {
             const result = await ReviewCollection.insertOne(user);
             res.send(result);
         });
-        
-        app.get('/reviews', async (req, res) => {
-            const email = req.query.email;
-            const query = { email: email };
-            const result = await ReviewCollection.find(query).toArray();
-            res.send(result)
-        })
 
+        app.get('/reviews', async (req, res) => {
+            let queryObj = {};
+            if (req.query && req.query.reviewerEmail) {
+                queryObj.reviewerEmail = req.query.reviewerEmail;
+            }
+            const result = await ReviewCollection.find(queryObj).toArray();
+            res.send(result);
+        });
+
+        app.delete('/reviews/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {
+                _id: new ObjectId(id),
+            };
+            const result = await ReviewCollection.deleteOne(query);
+            res.send(result);
+        })
         // properties collection
         app.get('/properties', async (req, res) => {
             const result = await PropertiesCollection.find().toArray();
