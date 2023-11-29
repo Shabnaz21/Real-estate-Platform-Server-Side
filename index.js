@@ -36,6 +36,7 @@ const UserCollection = client.db("newVilla").collection("users");
 const ReviewCollection = client.db("newVilla").collection("reviews");
 const PropertiesCollection = client.db("newVilla").collection("properties");
 const WishlistCollection = client.db("newVilla").collection("wishlists");
+const OfferCollection = client.db("newVilla").collection("proposal");
 
 async function run() {
     try {
@@ -95,7 +96,7 @@ async function run() {
             if (req.query && req.query.email) {
                 queryObj.email = req.query.email;
             }
-            console.log(req.headers);
+            // console.log(req.headers);
             const result = await UserCollection.find(queryObj).toArray();
             res.send(result);
         });
@@ -157,7 +158,6 @@ async function run() {
             const result = await UserCollection.updateOne(filter, updatedDoc);
             res.send(result);
         })
-
 
         // reviews collection
         app.get('/reviews', async (req, res) => {
@@ -225,6 +225,32 @@ async function run() {
             };
             const result = await WishlistCollection.deleteOne(query);
             res.send(result);
+        })
+
+        // Proposal Collection
+        app.post('/proposal', async (req, res) => {
+            const addItem = req.body;
+            const result = await OfferCollection.insertOne(addItem)
+            res.send(result)
+        })
+
+        app.get('/proposal', async (req, res) => {
+            let queryObj = {}
+            const userEmail = req.query?.userEmail;
+
+            if (userEmail) {
+                queryObj.userEmail = userEmail
+            }
+
+            const result = await OfferCollection.find(queryObj).toArray();
+            res.send(result)
+        })
+
+        app.get('/proposal/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await OfferCollection.findOne(query);
+            res.send(result)
         })
 
         // Send a ping to confirm a successful connection
