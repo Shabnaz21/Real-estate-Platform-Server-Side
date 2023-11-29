@@ -160,6 +160,12 @@ async function run() {
         })
 
         // reviews collection
+        app.post('/reviews', async (req, res) => {
+            const user = req.body;
+            const result = await ReviewCollection.insertOne(user);
+            res.send(result);
+        });
+        
         app.get('/reviews', async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
