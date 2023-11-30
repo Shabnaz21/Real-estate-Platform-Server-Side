@@ -125,6 +125,24 @@ async function run() {
             res.send(result);
         })
 
+        // agent get 
+        app.get('/users/agent/:email', async (req, res) => {
+            const email = req.params?.email;
+
+            // it's enable ,then auto singOut
+            // if (email !== req.decoded?.email) {
+            //     return res.status(403).send({ message: 'forbidden access' })
+            // }
+
+            const query = { email: email };
+            const user = await UserCollection.findOne(query);
+            let agent = false;
+            if (user) {
+                agent = user?.role === 'agent';
+            }
+            res.send({ agent });
+        })
+
         app.patch('/users/agent/:id', verifyToken, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
@@ -184,10 +202,22 @@ async function run() {
             const result = await ReviewCollection.deleteOne(query);
             res.send(result);
         })
+
         // properties collection
-        app.get('/properties', async (req, res) => {
-            const result = await PropertiesCollection.find().toArray();
+        app.post('/properties', async (req, res) => {
+            const addProperty = req.body;
+            const result = await PropertiesCollection.insertOne(addProperty)
             res.send(result)
+        })
+        app.get('/properties', async (req, res) => {
+            let queryObj = {};
+
+            if (req.query && req.query.agentEmail) {
+                queryObj['agentInformation.agentEmail'] = req.query.agentEmail;
+            }
+
+            const result = await PropertiesCollection.find(queryObj).toArray();
+            res.send(result);
         })
 
         app.get('/properties/:id', async (req, res) => {
@@ -209,13 +239,22 @@ async function run() {
             res.send(result);
         })
 
+        app.delete('/properties/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {
+                _id: new ObjectId(id),
+            };
+            const result = await PropertiesCollection.deleteOne(query);
+            res.send(result);
+        })
+
         // wishlist collection
         app.post('/wishlist', async (req, res) => {
             const addItem = req.body;
             const result = await WishlistCollection.insertOne(addItem)
             res.send(result)
         })
-
+        
         app.get('/wishlist', async (req, res) => {
             let queryObj = {}
             const userEmail = req.query?.userEmail;
