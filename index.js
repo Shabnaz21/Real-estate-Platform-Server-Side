@@ -46,14 +46,14 @@ async function run() {
         // JWT api
         app.post('/jwt', async (req, res) => {
             const user = req.body;
-            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'})
-            res.send({token})
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            res.send({ token })
         })
 
         const verifyToken = (req, res, next) => {
             console.log('inside verify in the middleware', headers);
             if (req.headers.authorization) {
-                return res.status(401).send({ message: 'unauthorized access'})
+                return res.status(401).send({ message: 'unauthorized access' })
             }
             const token = req.headers.authorization.split(' ')[1];
             jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
@@ -89,8 +89,7 @@ async function run() {
             res.send(result);
         });
 
-    
-        app.get('/users',  async (req, res) => {
+        app.get('/users', async (req, res) => {
 
             let queryObj = {};
             if (req.query && req.query.email) {
@@ -166,7 +165,7 @@ async function run() {
             res.send(result);
         })
 
-        app.patch('/users/admin/:id', verifyToken, verifyAdmin,  async (req, res) => {
+        app.patch('/users/admin/:id', verifyToken, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const updatedDoc = {
@@ -211,6 +210,20 @@ async function run() {
         })
         app.get('/properties', async (req, res) => {
             let queryObj = {};
+            // let sortObj = {};
+            // const foodName = req.query.foodName;
+            // const sortField = req.query.sortField;
+            // const sortOrder = req.query.sortOrder;
+
+            // // filter
+            // if (foodName) {
+            //     queryObj.foodName = foodName;
+            // }
+
+            // // sorting
+            // if (sortField && sortOrder) {
+            //     sortObj[sortField] = sortOrder
+            // }
 
             if (req.query && req.query.agentEmail) {
                 queryObj['agentInformation.agentEmail'] = req.query.agentEmail;
@@ -226,18 +239,38 @@ async function run() {
             const result = await PropertiesCollection.findOne(query);
             res.send(result)
         })
-        
+
         app.patch('/properties/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
-            const updatedDoc = {
-                $set: {
-                    status: 'verify' 
+            const updateData = req.body;
+            if (updateData.status) {
+                const updatedDoc = {
+                    $set: {
+                        status: 'verified'
+                    },
+                };
+
+                try {
+                    const result = await PropertiesCollection.updateOne(filter, updatedDoc);
+                    res.send(result);
+                } catch (error) {
+                    console.error('Error updating property status:', error);
+                }
+            } else {
+                const updatedDoc = {
+                    $set: {
+                        ...updateData,
+                    },
+                };
+                try {
+                    const result = await PropertiesCollection.updateOne(filter, updatedDoc);
+                    res.send(result);
+                } catch (error) {
+                    console.error('Error updating property:', error);
                 }
             }
-            const result = await PropertiesCollection.updateOne(filter, updatedDoc);
-            res.send(result);
-        })
+        });
 
         app.delete('/properties/:id', async (req, res) => {
             const id = req.params.id;
@@ -254,7 +287,7 @@ async function run() {
             const result = await WishlistCollection.insertOne(addItem)
             res.send(result)
         })
-        
+
         app.get('/wishlist', async (req, res) => {
             let queryObj = {}
             const userEmail = req.query?.userEmail;
@@ -262,7 +295,7 @@ async function run() {
             if (userEmail) {
                 queryObj.userEmail = userEmail
             }
-           
+
             const result = await WishlistCollection.find(queryObj).toArray();
             res.send(result)
         })
